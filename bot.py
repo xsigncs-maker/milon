@@ -20,11 +20,11 @@ def check_message(update: Update, context: CallbackContext) -> None:
     if update.effective_chat.type not in ['group', 'supergroup']:
         return
 
-    text = update.message.text.lower().strip()
+    text = update.message.text.lower()
 
-    # Проверяем, есть ли текст в триггерах
+    # Проверяем, содержится ли хотя бы один триггер в сообщении
     for trigger, response in TRIGGERS.items():
-        if trigger in text:
+        if trigger.lower() in text:
             update.message.reply_text(response)
             logger.info(f'Сработал триггер: "{trigger}" в чате {update.effective_chat.title}')
             break
