@@ -1,5 +1,6 @@
 import json
 import logging
+import random
 from telegram import Update
 from telegram.ext import Updater, MessageHandler, Filters, CallbackContext
 
@@ -23,10 +24,21 @@ def check_message(update: Update, context: CallbackContext) -> None:
     text = update.message.text.lower()
 
     # Проверяем, содержится ли хотя бы один триггер в сообщении
-    for trigger, response in TRIGGERS.items():
+    for trigger, data in TRIGGERS.items():
+        if isinstance(data, dict):
+            chance = data.get("chance", 100)
+            response = data["response"]
+        else:
+            # Совместимость со старым форматом
+            chance = 100
+            response = data
+
         if trigger.lower() in text:
-            update.message.reply_text(response)
-            logger.info(f'Сработал триггер: "{trigger}" в чате {update.effective_chat.title}')
+            if random.randint(1, 100) <= chance:
+                update.message.reply_text(response)
+                logger.info(f'Сработал триггер: "{trigger}" (шанс {chance}%) в чате {update.effective_chat.title}')
+            else:
+                logger.info(f'Триггер "{trigger}" проигнорирован по шансу ({chance}%).')
             break
 
 def main() -> None:
